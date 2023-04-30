@@ -1,38 +1,59 @@
-import { useState } from "react";
+import { useState, useReducer, useEffect } from "react";
 import "./styles.css";
 import { TodoItem } from "./TodoItem";
 import { useLocalStorage } from "./useLocalStorage";
 
+const ACTIONS = {
+  ADD: "ADD",
+  TOGGLE: "TOGGLE",
+  DELETE: "DELETE",
+  UPDATE: "UPDATE",
+};
+
+function reducer(todos, { type, payload }) {
+  switch (type) {
+    case ACTIONS.ADD:
+      return [
+        ...todos,
+        { name: payload.name, completed: false, id: crypto.randomUUID() },
+      ];
+    case ACTIONS.TOGGLE:
+      return todos.map((todo) => {
+        if (todo.id === payload.id)
+          return { ...todo, completed: payload.completed };
+
+        return todo;
+      });
+    case ACTIONS.DELETE:
+      return todos.filter((todo) => todo.id !== payload.id);
+  }
+}
+
 function App() {
-  const [newTodoName, setNewTodoName] = useLocalStorage("TODO_NAME", "");
-  const [todos, setTodos] = useLocalStorage("TODOS", []);
+  const [todos, dispatch] = useReducer(reducer, [], (initialValue) => {
+    const value = localStorage.getItem("TODOS");
+    if (value == null) return initialValue;
+
+    return JSON.parse(value);
+  });
+
+  useEffect(() => {
+    localStorage.setItem("TODOS", JSON.stringify(todos));
+  }, [todos]);
+
+  const [newTodoName, setNewTodoName] = useState("");
 
   function addNewTodo() {
-    if (newTodoName === "") return;
-
-    setTodos((currentTodos) => {
-      return [
-        ...currentTodos,
-        { name: newTodoName, completed: false, id: crypto.randomUUID() },
-      ];
-    });
+    dispatch({ type: ACTIONS.ADD, payload: { name: newTodoName } });
     setNewTodoName("");
   }
 
   function toggleTodo(todoId, completed) {
-    setTodos((currentTodos) => {
-      return currentTodos.map((todo) => {
-        if (todo.id === todoId) return { ...todo, completed };
-
-        return todo;
-      });
-    });
+    dispatch({ type: ACTIONS.TOGGLE, payload: { id: todoId, completed } });
   }
 
   function deleteTodo(todoId) {
-    setTodos((currentTodos) => {
-      return currentTodos.filter((todo) => todo.id !== todoId);
-    });
+    dispatch({ type: ACTIONS.DELETE, payload: { id: todoId } });
   }
 
   return (
