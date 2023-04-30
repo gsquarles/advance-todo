@@ -1,43 +1,44 @@
-import { useState } from "react"
-import "./styles.css"
-import { TodoItem } from "./TodoItem"
+import { useState } from "react";
+import "./styles.css";
+import { TodoItem } from "./TodoItem";
+import { useLocalStorage } from "./useLocalStorage";
 
 function App() {
-  const [newTodoName, setNewTodoName] = useState("")
-  const [todos, setTodos] = useState([])
+  const [newTodoName, setNewTodoName] = useLocalStorage("TODO_NAME", "");
+  const [todos, setTodos] = useLocalStorage("TODOS", []);
 
   function addNewTodo() {
-    if (newTodoName === "") return
+    if (newTodoName === "") return;
 
-    setTodos(currentTodos => {
+    setTodos((currentTodos) => {
       return [
         ...currentTodos,
         { name: newTodoName, completed: false, id: crypto.randomUUID() },
-      ]
-    })
-    setNewTodoName("")
+      ];
+    });
+    setNewTodoName("");
   }
 
   function toggleTodo(todoId, completed) {
-    setTodos(currentTodos => {
-      return currentTodos.map(todo => {
-        if (todo.id === todoId) return { ...todo, completed }
+    setTodos((currentTodos) => {
+      return currentTodos.map((todo) => {
+        if (todo.id === todoId) return { ...todo, completed };
 
-        return todo
-      })
-    })
+        return todo;
+      });
+    });
   }
 
   function deleteTodo(todoId) {
-    setTodos(currentTodos => {
-      return currentTodos.filter(todo => todo.id !== todoId)
-    })
+    setTodos((currentTodos) => {
+      return currentTodos.filter((todo) => todo.id !== todoId);
+    });
   }
 
   return (
     <>
-      <ul id="list">
-        {todos.map(todo => {
+      <ul id='list'>
+        {todos.map((todo) => {
           return (
             <TodoItem
               key={todo.id}
@@ -45,22 +46,22 @@ function App() {
               toggleTodo={toggleTodo}
               deleteTodo={deleteTodo}
             />
-          )
+          );
         })}
       </ul>
 
-      <div id="new-todo-form">
-        <label htmlFor="todo-input">New Todo</label>
+      <div id='new-todo-form'>
+        <label htmlFor='todo-input'>New Todo</label>
         <input
-          type="text"
-          id="todo-input"
+          type='text'
+          id='todo-input'
           value={newTodoName}
-          onChange={e => setNewTodoName(e.target.value)}
+          onChange={(e) => setNewTodoName(e.target.value)}
         />
         <button onClick={addNewTodo}>Add Todo</button>
       </div>
     </>
-  )
+  );
 }
 
-export default App
+export default App;
